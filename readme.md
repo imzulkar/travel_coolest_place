@@ -17,8 +17,8 @@ Before you begin, ensure you have the following installed:
 1. Clone this repository to your local machine:
 
    ```bash
-   git clone https://github.com/imzulkar/travel_somewhere_cool.git
-   cd your-django-project
+   git clone https://github.com/imzulkar/travel_coolest_place.git
+   cd your-project-directory
    ```
 
 2. Build and run the Docker containers:
