@@ -1,4 +1,4 @@
-To document your Django project setup with Docker, Redis, Flower, and Celery, you can create a `README.md` file in your project's root directory. Here's a template for your `README.md`:
+# Travel Coolest Place
 
 ```markdown
 # Django Project with Docker, Redis, Flower, and Celery
