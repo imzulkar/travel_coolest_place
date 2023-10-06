@@ -11,7 +11,7 @@ Before you begin, ensure you have the following installed:
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
-
+```
 ## Getting Started
 
 1. Clone this repository to your local machine:
