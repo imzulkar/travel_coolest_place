@@ -43,9 +43,10 @@ def store_2pm_temperature(district_name, times, temperatures):
     for i in range(12, len(times), 24):
         date, time = date_time_format(times[i + 2])
         print(district_name, date, time, temperatures[i])
-        weather, created = Weather.objects.get_or_create(
-            district=district_name, date=date, time=time, temp=temperatures[i]
-        )
+        if temperatures[i] is not None:
+            weather, created = Weather.objects.get_or_create(
+                district=district_name, date=date, time=time, temp=temperatures[i]
+            )
     return district_name
 
 

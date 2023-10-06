@@ -17,8 +17,8 @@ today = datetime.today().date()
 app.conf.beat_schedule = {
     "weather_info": {
         "task": "weather.tasks.get_weather_info",
-        "schedule": crontab(hour=1, minute=00),
-        # "schedule": 10,
+        # "schedule": crontab(hour=1, minute=00),
+        "schedule": 10,
         "args": {today, today + timedelta(days=6)},
     }
 }
