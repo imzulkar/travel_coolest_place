@@ -37,11 +37,12 @@ class PlaceToVisitView(APIView):
     def get(self, request, format=None):
         """
         get the random 1 coolest district to visit
+        from top 5 coolest district pick one randomly avg temp for next 7 days
         """
         # get the coolest district
         today = datetime.now().date()
         data = avg_temp(
-            models=Weather, limit=10, date=today, day_limit=7
+            models=Weather, limit=5, date=today, day_limit=7
         )  # get specific data from database and limitt data and how many days avg you want
         if data.exists():
             # Select a random object from the queryset
