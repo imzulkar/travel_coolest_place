@@ -1,57 +1,32 @@
-from utils.url_list import districts_url, open_metro
-from utils.helper import get_api_response
-from datetime import datetime
 import contextlib
+from utils.helper import get_api_response
+from utils.url_list import open_metro, districts_url
+from datetime import datetime, timedelta
+from weather.models import Weather
 
 
-def get_districts_weather_data():
-    # load districts data
-    data = get_api_response(districts_url)
-    districts_data = data["districts"]
-    print(districts_data)
-
-    for district in districts_data:
-        # print(district)
-        division = district["division_id"]
-        district_name = district["name"]
-        district_bn_name = district["bn_name"]
-        lat = district["lat"]
-        long = district["long"]
-
-        # weather data
-        weather_data = get_api_response(
-            open_metro.format(
-                latitude=lat,
-                longitude=long,
-                start_date="2023-10-06",
-                end_date="2023-10-13",
-            )
-        )
-
-        # print(weather_data)
-        get_2pm_data(weather_data)
+def get_coordinates(district):
+    # destructure the district data
+    latitude = district["lat"]
+    longitude = district["long"]
+    district_name = district["name"]
+    return latitude, longitude, district_name
 
 
-def get_2pm_data(data):
-    # print(data)
-    hourly_data = data["hourly"]
-    time = hourly_data["time"]
-    temp = hourly_data["temperature_2m"]
-    # print(time, temp)
+def get_forcast_time_and_temperature(forcast_data):
+    # destructure time and temperature from api response
+    times = forcast_data["hourly"]["time"]
+    temperatures = forcast_data["hourly"]["temperature_2m"]
+    return times, temperatures
 
-    # split time by date
-    date_list = []
-    time_list = []
 
-    for i in range(14, len(time), 24):
-        # print(time[i], temp[i])
-        date, time = date_time_format(time[i])
-        date_list.append(date)
-        time_list.append(time)
-    print(date, time)
-    date_time = list(zip(date_list, time_list))
-    print(date_time)
-    return date_time
+def weather_informations(latitude, longitude, start_date, end_date):
+    # weather informations fetch from open-metro api
+    print(f"weather_informations- {start_date}{end_date}")
+    url = open_metro.format(
+        latitude=latitude, longitude=longitude, start_date=start_date, end_date=end_date
+    )
+    return get_api_response(url)
 
 
 def date_time_format(times):
@@ -61,3 +36,35 @@ def date_time_format(times):
     with contextlib.suppress(IndexError):
         date = date[0]
     return date, time
+
+
+def store_2pm_temperature(district_name, times, temperatures):
+    # store every day 2pm/14  temperature in database
+    for i in range(12, len(times), 24):
+        date, time = date_time_format(times[i + 2])
+        print(district_name, date, time, temperatures[i])
+        weather, created = Weather.objects.get_or_create(
+            district=district_name, date=date, time=time, temp=temperatures[i]
+        )
+    return district_name
+
+
+def get_districts_weather(start_date=None, end_date=None):
+    # this function will execute every day using periodic task
+
+    districts = get_api_response(districts_url)  # fetch districts data from github
+    for district in districts["districts"]:
+        latitude, longitude, district_name = get_coordinates(district)
+
+        # Fetch temperature data for the next 7 days at 2 PM
+        forcast_data = weather_informations(
+            latitude, longitude, start_date, end_date
+        )  # fetch data from open-metro api
+        times, temperatures = get_forcast_time_and_temperature(
+            forcast_data
+        )  # get time and temperature from api response
+        store_2pm_temperature(
+            district_name, times, temperatures
+        )  # store 2pm temperature in database
+
+    return True
